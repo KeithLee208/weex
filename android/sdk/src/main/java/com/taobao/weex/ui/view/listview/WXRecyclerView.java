@@ -204,14 +204,25 @@
  */
 package com.taobao.weex.ui.view.listview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.os.Handler;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.view.MotionEvent;
+import android.view.View;
 
+import com.taobao.weex.ui.component.WXComponent;
 import com.taobao.weex.ui.component.WXRefreshableContainer;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class WXRecyclerView extends RecyclerView {
 
@@ -220,6 +231,26 @@ public class WXRecyclerView extends RecyclerView {
   public static final int TYPE_STAGGERED_GRID_LAYOUT = 3;
 
   private WXRefreshableContainer mWAScroller;
+
+  //sticky
+  private View mCurrentStickyView;
+  private boolean mRedirectTouchToStickyView;
+  private int mStickyOffset;
+  private boolean mHasNotDoneActionDown = true;
+  @SuppressLint("HandlerLeak")
+  private Handler mScrollerTask;
+  private int mInitialPosition;
+  private int mCheckTime = 100;
+  /**
+   * The location of mCurrentStickyView
+   */
+  private int[] mStickyP = new int[2];
+  /**
+   * Location of the scrollView
+   */
+  private Rect mScrollRect;
+  private int[] stickyScrollerP = new int[2];
+  private int[] stickyViewP = new int[2];
 
   public WXRecyclerView(Context context) {
     super(context);
@@ -243,5 +274,118 @@ public class WXRecyclerView extends RecyclerView {
 
   public void setWAScroller(WXRefreshableContainer mWAScroller) {
     this.mWAScroller = mWAScroller;
+  }
+
+  @Override
+  public boolean dispatchTouchEvent(MotionEvent ev) {
+    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+      mRedirectTouchToStickyView = true;
+    }
+
+    if (mRedirectTouchToStickyView) {
+      mRedirectTouchToStickyView = mCurrentStickyView != null;
+
+      if (mRedirectTouchToStickyView) {
+        mRedirectTouchToStickyView = ev.getY() <= mCurrentStickyView.getHeight()
+                                     && ev.getX() >= mCurrentStickyView.getLeft()
+                                     && ev.getX() <= mCurrentStickyView.getRight();
+      }
+    }
+
+    if (mRedirectTouchToStickyView) {
+      if (mScrollRect == null) {
+        mScrollRect = new Rect();
+        getGlobalVisibleRect(mScrollRect);
+      }
+      mCurrentStickyView.getLocationOnScreen(stickyViewP);
+      ev.offsetLocation(0, stickyViewP[1] - mScrollRect.top);
+    }
+    return super.dispatchTouchEvent(ev);
+  }
+
+  @Override
+  protected void dispatchDraw(Canvas canvas) {
+    super.dispatchDraw(canvas);
+    if (mCurrentStickyView != null) {
+      canvas.save();
+      mCurrentStickyView.getLocationOnScreen(mStickyP);
+      int realOffset = (mStickyOffset <= 0 ? mStickyOffset : 0);
+      canvas.translate(mStickyP[0], getScrollY() + realOffset);
+      canvas.clipRect(0, realOffset, mCurrentStickyView.getWidth(),
+                      mCurrentStickyView.getHeight());
+      mCurrentStickyView.draw(canvas);
+      canvas.restore();
+    }
+  }
+
+  @Override
+  public boolean onTouchEvent(MotionEvent ev) {
+    if (mRedirectTouchToStickyView) {
+
+      if (mScrollRect == null) {
+        mScrollRect = new Rect();
+        getGlobalVisibleRect(mScrollRect);
+      }
+      mCurrentStickyView.getLocationOnScreen(stickyViewP);
+      ev.offsetLocation(0, -(stickyViewP[1] - mScrollRect.top));
+    }
+
+    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+      mHasNotDoneActionDown = false;
+    }
+
+    if (mHasNotDoneActionDown) {
+      MotionEvent down = MotionEvent.obtain(ev);
+      down.setAction(MotionEvent.ACTION_DOWN);
+      mHasNotDoneActionDown = false;
+    }
+
+    return super.onTouchEvent(ev);
+  }
+
+  @Override
+  protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+    showStickyView();
+    super.onScrollChanged(l, t, oldl, oldt);
+  }
+
+  private void showStickyView() {
+    View curStickyView = procSticky(mWAScroller.getStickMap());
+
+    if (curStickyView != null) {
+      mCurrentStickyView = curStickyView;
+    } else {
+      mCurrentStickyView = null;
+    }
+  }
+
+  private View procSticky(Map<String, HashMap<String, WXComponent>> mStickyMap) {
+    if (mStickyMap == null) {
+      return null;
+    }
+    HashMap<String, WXComponent> stickyMap = mStickyMap.get(mWAScroller.getRef());
+    if (stickyMap == null) {
+      return null;
+    }
+
+    Iterator<Map.Entry<String, WXComponent>> iterator = stickyMap.entrySet().iterator();
+    Map.Entry<String, WXComponent> entry = null;
+    WXComponent stickyData;
+    while (iterator.hasNext()) {
+      entry = iterator.next();
+      stickyData = entry.getValue();
+
+      getLocationOnScreen(stickyScrollerP);
+      stickyData.getView().getLocationOnScreen(stickyViewP);
+      int parentH = stickyData.getParent().getRealView().getHeight();
+      int stickyViewH = stickyData.getView().getHeight();
+      int stickyShowPos = stickyScrollerP[1];
+      int stickyStartHidePos = -parentH + stickyScrollerP[1] + stickyViewH;
+      if (stickyViewP[1] <= stickyShowPos && stickyViewP[1] >= (stickyStartHidePos - stickyViewH)) {
+        mStickyOffset = stickyViewP[1] - stickyStartHidePos;
+        return stickyData.getView();
+      }
+    }
+    return null;
   }
 }

@@ -205,6 +205,7 @@
 package com.taobao.weex.ui.view.refresh.wrapper;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
 
 import com.taobao.weex.ui.component.WXRefreshableContainer;
 import com.taobao.weex.ui.view.listview.WXRecyclerView;
@@ -233,6 +234,7 @@ public class BounceRecyclerView extends BaseBounceView<WXRecyclerView> {
     @Override
     public WXRecyclerView setInnerView(Context context) {
         WXRecyclerView wxRecyclerView = new WXRecyclerView(context);
+        wxRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         wxRecyclerView.initView(context, WXRecyclerView.TYPE_LINEAR_LAYOUT, getOrientation());
         return wxRecyclerView;
     }

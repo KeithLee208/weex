@@ -339,6 +339,7 @@ public class WXRefreshableContainer extends WXVContainer {
     }
     stickyMap.put(component.getRef(), component);
     mStickyMap.put(refreshableContainer.getRef(), stickyMap);
+//    Log.i("miomin",component.getRef());
   }
 
   public void unbindStickStyle(WXComponent component) {

@@ -236,7 +236,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Component for scroller. It also support features like
- * "appear", "disappear" and "sticky"
+ * "appear", "disappear"
  */
 public class WXScroller extends WXRefreshableContainer implements WXScrollViewListener {
 

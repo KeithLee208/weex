@@ -218,7 +218,7 @@ import com.taobao.weex.ui.view.refresh.core.WXSwipeLayout;
  * BounceView(SwipeLayout) contains Scroller/List and refresh/loading view
  * @param <T> InnerView
  */
-public abstract class BaseBounceView<T extends View> extends ViewGroup {
+    public abstract class BaseBounceView<T extends View> extends ViewGroup {
 
     private int mOrientation = OrientationHelper.VERTICAL;
     protected WXSwipeLayout swipeLayout;
