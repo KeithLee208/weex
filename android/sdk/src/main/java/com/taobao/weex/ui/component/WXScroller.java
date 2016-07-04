@@ -244,11 +244,9 @@ public class WXScroller extends WXRefreshableContainer implements WXScrollViewLi
    * Map for storing appear information
    **/
   private Map<String, ConcurrentHashMap<String, AppearData>> mAppearMap = new ConcurrentHashMap<>();
-  /**
-   * Map for storing component that is sticky.
-   **/
-  private Map<String, HashMap<String, WXComponent>> mStickyMap = new HashMap<>();
+
   private FrameLayout mRealView;
+
   /**
    * Location of scrollView
    **/
@@ -284,9 +282,6 @@ public class WXScroller extends WXRefreshableContainer implements WXScrollViewLi
     super.destroy();
     if (mAppearMap != null) {
       mAppearMap.clear();
-    }
-    if (mStickyMap != null) {
-      mStickyMap.clear();
     }
     if (getInnerView() != null && getInnerView() instanceof IWXScroller) {
       ((IWXScroller) getInnerView()).destroy();
@@ -394,10 +389,6 @@ public class WXScroller extends WXRefreshableContainer implements WXScrollViewLi
     return getInnerView() == null ? 0 : getInnerView().getScrollX();
   }
 
-  public Map<String, HashMap<String, WXComponent>> getStickMap() {
-    return mStickyMap;
-  }
-
   @WXComponentProp(name = WXDomPropConstant.WX_ATTR_SHOWSCROLLBAR)
   public void setShowScrollbar(boolean show) {
     if (show) {
@@ -413,37 +404,6 @@ public class WXScroller extends WXRefreshableContainer implements WXScrollViewLi
         mHost.setHorizontalScrollBarEnabled(false);
       }
     }
-  }
-
-  // TODO Need constrain, each container can only have one sticky child
-  public void bindStickStyle(WXComponent component) {
-    WXScroller scroller = component.getParentScroller();
-    if (scroller == null) {
-      return;
-    }
-    HashMap<String, WXComponent> stickyMap = mStickyMap.get(scroller
-                                                                .getRef());
-    if (stickyMap == null) {
-      stickyMap = new HashMap<>();
-    }
-    if (stickyMap.containsKey(component.getRef())) {
-      return;
-    }
-    stickyMap.put(component.getRef(), component);
-    mStickyMap.put(scroller.getRef(), stickyMap);
-  }
-
-  public void unbindStickStyle(WXComponent component) {
-    WXScroller scroller = component.getParentScroller();
-    if (scroller == null) {
-      return;
-    }
-    HashMap<String, WXComponent> stickyMap = mStickyMap.get(scroller
-                                                                .getRef());
-    if (stickyMap == null) {
-      return;
-    }
-    stickyMap.remove(component.getRef());
   }
 
   /**

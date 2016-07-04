@@ -276,15 +276,18 @@ public abstract class WXComponent implements IWXObject, IWXActivityStateListener
 
     mDomObj = domObject;
 
-    if (this instanceof WXRefresh && mParent instanceof WXRefreshableContainer &&
+    if (this instanceof WXRefresh && mParent instanceof WXRefreshableContainer && !(mParent
+        instanceof WXListComponent) &&
         isOuterRefreshableContainer(mParent)) {
       mInstance.setRefreshMargin(mDomObj.csslayout.dimensions[CSSLayout.DIMENSION_HEIGHT]);
     }
-    if ((this instanceof WXBaseRefresh && mParent instanceof WXRefreshableContainer)) {
+    if ((this instanceof WXBaseRefresh && mParent instanceof WXRefreshableContainer && !(mParent
+        instanceof WXListComponent))) {
       return;
     }
 
-    if (mParent instanceof WXRefreshableContainer && isOuterRefreshableContainer(mParent)) {
+    if (mParent instanceof WXRefreshableContainer && !(mParent
+        instanceof WXListComponent) && isOuterRefreshableContainer(mParent)) {
       if (!(this instanceof WXBaseRefresh)) {
           CSSLayout newLayout = new CSSLayout();
           newLayout.copy(mDomObj.csslayout);
@@ -564,6 +567,26 @@ public abstract class WXComponent implements IWXObject, IWXActivityStateListener
     }
   }
 
+  public WXRefreshableContainer getParentRefreshContainer() {
+    WXComponent component = this;
+    WXVContainer container;
+    WXRefreshableContainer refreshableContainer;
+    for (; ; ) {
+      container = component.getParent();
+      if (container == null) {
+        return null;
+      }
+      if (container instanceof WXRefreshableContainer) {
+        refreshableContainer = (WXRefreshableContainer) container;
+        return refreshableContainer;
+      }
+      if (container.getRef().equals(WXDomObject.ROOT)) {
+        return null;
+      }
+      component = container;
+    }
+  }
+
   public WXVContainer getParent() {
     return mParent;
   }
@@ -673,9 +696,9 @@ public abstract class WXComponent implements IWXObject, IWXActivityStateListener
     }
 
     if (mDomObj.isSticky()) {
-      WXScroller scroller = getParentScroller();
-      if (scroller != null) {
-        scroller.unbindStickStyle(this);
+      WXRefreshableContainer refreshableContainer = getParentRefreshContainer();
+      if (refreshableContainer != null) {
+        refreshableContainer.unbindStickStyle(this);
       }
     }
   }
@@ -691,9 +714,9 @@ public abstract class WXComponent implements IWXObject, IWXActivityStateListener
   @WXComponentProp(name = WXDomPropConstant.WX_POSITION)
   public void setSticky(String sticky) {
     if (!TextUtils.isEmpty(sticky) && sticky.equals(WXDomPropConstant.WX_POSITION_STICKY)) {
-      WXScroller waScroller = getParentScroller();
-      if (waScroller != null) {
-        waScroller.bindStickStyle(this);
+      WXRefreshableContainer refreshableContainer = getParentRefreshContainer();
+      if (refreshableContainer != null) {
+        refreshableContainer.bindStickStyle(this);
       }
     }
   }

@@ -213,12 +213,19 @@ import com.taobao.weex.ui.view.WXBaseRefreshLayout;
 import com.taobao.weex.ui.view.refresh.wrapper.BaseBounceView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Parent of Refreshable Container，if your component support refresh or loadmore, should extends WXRefreshContainer
  * Such as WXScroller. Except WXListComponent.
  */
 public class WXRefreshableContainer extends WXVContainer {
+
+  /**
+   * Map for storing component that is sticky.
+   **/
+  private Map<String, HashMap<String, WXComponent>> mStickyMap = new HashMap<>();
 
   private Handler handler=new Handler();
 
@@ -302,5 +309,48 @@ public class WXRefreshableContainer extends WXVContainer {
       };
       handler.postDelayed(runnable,100);
     }
+  }
+
+  @Override
+  public void destroy() {
+    super.destroy();
+    if (mStickyMap != null) {
+      mStickyMap.clear();
+    }
+  }
+
+  public Map<String, HashMap<String, WXComponent>> getStickMap() {
+    return mStickyMap;
+  }
+
+  // TODO Need constrain, each container can only have one sticky child
+  public void bindStickStyle(WXComponent component) {
+    WXRefreshableContainer refreshableContainer = component.getParentRefreshContainer();
+    if (refreshableContainer == null) {
+      return;
+    }
+    HashMap<String, WXComponent> stickyMap = mStickyMap.get(refreshableContainer
+                                                                .getRef());
+    if (stickyMap == null) {
+      stickyMap = new HashMap<>();
+    }
+    if (stickyMap.containsKey(component.getRef())) {
+      return;
+    }
+    stickyMap.put(component.getRef(), component);
+    mStickyMap.put(refreshableContainer.getRef(), stickyMap);
+  }
+
+  public void unbindStickStyle(WXComponent component) {
+    WXRefreshableContainer refreshableContainer = component.getParentRefreshContainer();
+    if (refreshableContainer == null) {
+      return;
+    }
+    HashMap<String, WXComponent> stickyMap = mStickyMap.get(refreshableContainer
+                                                                .getRef());
+    if (stickyMap == null) {
+      return;
+    }
+    stickyMap.remove(component.getRef());
   }
 }

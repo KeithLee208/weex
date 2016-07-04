@@ -206,12 +206,12 @@ package com.taobao.weex.ui.view.refresh.wrapper;
 
 import android.content.Context;
 
-import com.taobao.weex.ui.component.WXScroller;
+import com.taobao.weex.ui.component.WXRefreshableContainer;
 import com.taobao.weex.ui.view.WXScrollView;
 
 public class BounceScrollerView extends BaseBounceView<WXScrollView> {
 
-    public BounceScrollerView(Context context, int orientation,WXScroller waScroller) {
+    public BounceScrollerView(Context context, int orientation,WXRefreshableContainer waScroller) {
         super(context,orientation);
         if (getInnerView() != null)
             getInnerView().setWAScroller(waScroller);

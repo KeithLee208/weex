@@ -205,9 +205,8 @@
 package com.taobao.weex.ui.view.refresh.wrapper;
 
 import android.content.Context;
-import android.support.v7.widget.OrientationHelper;
-import android.util.AttributeSet;
 
+import com.taobao.weex.ui.component.WXRefreshableContainer;
 import com.taobao.weex.ui.view.listview.WXRecyclerView;
 import com.taobao.weex.ui.view.listview.adapter.RecyclerViewBaseAdapter;
 
@@ -215,12 +214,10 @@ public class BounceRecyclerView extends BaseBounceView<WXRecyclerView> {
 
     private RecyclerViewBaseAdapter adapter = null;
 
-    public BounceRecyclerView(Context context,int orientation) {
+    public BounceRecyclerView(Context context,int orientation,WXRefreshableContainer waScroller) {
         super(context,orientation);
-    }
-
-    public BounceRecyclerView(Context context, AttributeSet attrs) {
-        super(context, attrs, OrientationHelper.VERTICAL);
+        if (getInnerView() != null)
+            getInnerView().setWAScroller(waScroller);
     }
 
     public void setAdapter(RecyclerViewBaseAdapter adapter) {

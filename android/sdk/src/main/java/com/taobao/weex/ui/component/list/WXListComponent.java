@@ -225,6 +225,7 @@ import com.taobao.weex.ui.component.WXComponent;
 import com.taobao.weex.ui.component.WXEventType;
 import com.taobao.weex.ui.component.WXLoading;
 import com.taobao.weex.ui.component.WXRefresh;
+import com.taobao.weex.ui.component.WXRefreshableContainer;
 import com.taobao.weex.ui.component.WXVContainer;
 import com.taobao.weex.ui.view.listview.adapter.IOnLoadMoreListener;
 import com.taobao.weex.ui.view.listview.adapter.IRecyclerAdapterListener;
@@ -249,7 +250,7 @@ import java.util.regex.Pattern;
  * {@link #onViewRecycled(ListBaseViewHolder)}. In other situations, the association may not valid
  * or not even exist.
  */
-public class WXListComponent extends WXVContainer implements
+public class WXListComponent extends WXRefreshableContainer implements
         IRecyclerAdapterListener<ListBaseViewHolder>,IOnLoadMoreListener {
 
     public static final String TRANSFORM = "transform";
@@ -339,7 +340,7 @@ public class WXListComponent extends WXVContainer implements
 
     @Override
     protected void initView() {
-        bounceRecyclerView = new BounceRecyclerView(mContext, getOrientation());
+        bounceRecyclerView = new BounceRecyclerView(mContext, getOrientation(),this);
 
         String transforms = (String) mDomObj.attr.get(TRANSFORM);
         if (transforms != null) {
@@ -427,9 +428,21 @@ public class WXListComponent extends WXVContainer implements
      */
     @Override
     public void addChild(WXComponent child, int index) {
-        super.addChild(child, index);
+      if (child == null || index < -1) {
+        return;
+      }
+      if (mChildren == null) {
+        mChildren = new ArrayList<>();
+      }
+      int count = mChildren.size();
+      index = index >= count ? -1 : index;
+      if (index == -1) {
+        mChildren.add(child);
+      } else {
+        mChildren.add(index, child);
+      }
 
-        int adapterPosition = index == -1 ? mChildren.size() - 1 : index;
+      int adapterPosition = index == -1 ? mChildren.size() - 1 : index;
       BounceRecyclerView view =  getView();
       if(view != null) {
         view.getAdapter().notifyItemInserted(adapterPosition);
@@ -466,12 +479,12 @@ public class WXListComponent extends WXVContainer implements
      */
     @Override
     protected void addSubView(View child, int index) {
-      BounceRecyclerView view =  getView();
-      if(view == null){
-        return;
-      }
-
-      int pos = index == -1 ?view.getAdapter().getItemCount()-1:index;
+//      BounceRecyclerView view =  getView();
+//      if(view == null){
+//        return;
+//      }
+//
+//      int pos = index == -1 ?view.getAdapter().getItemCount()-1:index;
     }
 
     /**

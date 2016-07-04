@@ -211,11 +211,15 @@ import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 
+import com.taobao.weex.ui.component.WXRefreshableContainer;
+
 public class WXRecyclerView extends RecyclerView {
 
   public static final int TYPE_LINEAR_LAYOUT = 1;
   public static final int TYPE_GRID_LAYOUT = 2;
   public static final int TYPE_STAGGERED_GRID_LAYOUT = 3;
+
+  private WXRefreshableContainer mWAScroller;
 
   public WXRecyclerView(Context context) {
     super(context);
@@ -237,4 +241,7 @@ public class WXRecyclerView extends RecyclerView {
     }
   }
 
+  public void setWAScroller(WXRefreshableContainer mWAScroller) {
+    this.mWAScroller = mWAScroller;
+  }
 }

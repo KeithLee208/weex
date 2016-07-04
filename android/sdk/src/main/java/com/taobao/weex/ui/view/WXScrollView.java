@@ -220,7 +220,7 @@ import android.view.View;
 import android.widget.ScrollView;
 
 import com.taobao.weex.ui.component.WXComponent;
-import com.taobao.weex.ui.component.WXScroller;
+import com.taobao.weex.ui.component.WXRefreshableContainer;
 import com.taobao.weex.ui.view.gesture.WXGesture;
 import com.taobao.weex.ui.view.gesture.WXGestureObservable;
 import com.taobao.weex.utils.WXLogUtils;
@@ -250,7 +250,7 @@ public class WXScrollView extends ScrollView implements Callback, IWXScroller,
   int mScrollY;
   private WXGesture wxGesture;
   private List<WXScrollViewListener> mScrollViewListeners;
-  private WXScroller mWAScroller;
+  private WXRefreshableContainer mWAScroller;
   //sticky
   private View mCurrentStickyView;
   private boolean mRedirectTouchToStickyView;
@@ -615,7 +615,7 @@ public class WXScrollView extends ScrollView implements Callback, IWXScroller,
     void onScroll(WXScrollView scrollView, int x, int y);
   }
 
-  public void setWAScroller(WXScroller mWAScroller) {
+  public void setWAScroller(WXRefreshableContainer mWAScroller) {
     this.mWAScroller = mWAScroller;
   }
 }
